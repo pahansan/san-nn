@@ -20,10 +20,11 @@ func (l *Layer) GetOutput(input []float64) error {
 	}
 
 	for i, row := range l.Weights {
+		sum := 0.0
 		for j, weight := range row {
-			l.Output[i] += weight * input[j]
+			sum += weight * input[j]
 		}
-		l.Output[i] = nnmath.Sigmoid(l.Output[i])
+		l.Output[i] = nnmath.Sigmoid(sum)
 	}
 	return nil
 }
@@ -42,7 +43,7 @@ func NewLayer(inputSize, outputSize int) Layer {
 func (l *Layer) InitWeightsRand() {
 	for i, row := range l.Weights {
 		for j := range row {
-			l.Weights[i][j] = rand.Float64() + 1.0
+			l.Weights[i][j] = rand.Float64()*2 - 1
 		}
 	}
 }
