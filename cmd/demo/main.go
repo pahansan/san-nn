@@ -20,7 +20,7 @@ func main() {
 
 		neuro.SetInput([]float64{float64(x), float64(y)})
 		neuro.ForwardProp()
-		neuro.BackProp([]float64{target}, 0.1)
+		neuro.BackProp([]float64{target}, 0.5)
 
 		if i%10000 == 0 {
 			cost, _ := neuro.GetCost([]float64{target})
