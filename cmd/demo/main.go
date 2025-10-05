@@ -7,22 +7,31 @@ import (
 )
 
 func main() {
-	config := []int{2, 2, 1}
+	config := []int{2, 4, 1}
 	neuro := nn.NewNN(config)
 	neuro.InitWeightsRand()
-	x := rand.Int() % 2
-	y := rand.Int() % 2
-	neuro.SetInput([]float64{float64(x), float64(y)})
-	neuro.ForwardProp()
-	start, _ := neuro.GetCost([]float64{float64(x ^ y)})
-	for range 100000 {
+
+	fmt.Println("Training...")
+
+	for i := 0; i < 100000; i++ {
 		x := rand.Int() % 2
 		y := rand.Int() % 2
-		neuro.BackProp([]float64{float64(x ^ y)}, 1.0)
-		neuro.ForwardProp()
-		fmt.Printf("%d ^ %d = %f\n", x, y, neuro.GetOutput()[0])
-	}
-	end, _ := neuro.GetCost([]float64{float64(x ^ y)})
+		target := float64(x ^ y)
 
-	fmt.Printf("Cost at start: %f, at end: %f\n", start, end)
+		neuro.SetInput([]float64{float64(x), float64(y)})
+		neuro.ForwardProp()
+		neuro.BackProp([]float64{target}, 0.1)
+
+		if i%10000 == 0 {
+			cost, _ := neuro.GetCost([]float64{target})
+			fmt.Printf("Iter %d, cost=%.6f\n", i, cost)
+		}
+	}
+
+	tests := [][2]int{{0, 0}, {0, 1}, {1, 0}, {1, 1}}
+	for _, t := range tests {
+		neuro.SetInput([]float64{float64(t[0]), float64(t[1])})
+		neuro.ForwardProp()
+		fmt.Printf("%d ^ %d -> %.4f\n", t[0], t[1], neuro.GetOutput()[0])
+	}
 }

@@ -31,13 +31,12 @@ func (n *NN) InitWeightsRand() {
 }
 
 func (n *NN) ForwardProp() error {
-	tmp_input := n.Input
-
+	tmpInput := n.Input
 	for i := range n.Layers {
-		if err := n.Layers[i].GetOutput(tmp_input); err != nil {
-			panic(err)
+		if err := (&n.Layers[i]).GetOutput(tmpInput); err != nil {
+			return err
 		}
-		tmp_input = n.Layers[i].Output
+		tmpInput = n.Layers[i].Output
 	}
 	return nil
 }
@@ -46,45 +45,53 @@ func (n *NN) SetInput(input []float64) error {
 	if len(input) != len(n.Input) {
 		return fmt.Errorf("got input with length %d, but expected %d", len(input), len(n.Input))
 	}
-	n.Input = input
+	n.Input = append([]float64(nil), input...)
 	return nil
 }
 
 func (n *NN) GetOutput() []float64 {
+	if len(n.Layers) == 0 {
+		return nil
+	}
 	return n.Layers[len(n.Layers)-1].Output
 }
 
 func (n *NN) BackProp(target []float64, theta float64) error {
+	if len(n.Layers) == 0 {
+		return fmt.Errorf("network has no layers")
+	}
 	output := n.GetOutput()
 	if len(target) != len(output) {
-		return fmt.Errorf("got input with length %d, but expected %d", len(target), len(output))
+		return fmt.Errorf("got target with length %d, but expected %d", len(target), len(output))
+	}
+
+	delta := make([]float64, len(output))
+	for j := range output {
+		delta[j] = output[j] - target[j]
 	}
 
 	for i := len(n.Layers) - 1; i >= 0; i-- {
-		var dzdv float64
-		var new_target_len int
-		if i != 0 {
-			new_target_len = len(n.Layers[i-1].Output)
-		} else {
-			new_target_len = len(n.Input)
+		layer := &n.Layers[i]
+
+		prevAct := n.Input
+		if i > 0 {
+			prevAct = n.Layers[i-1].Output
 		}
-		var new_target = make([]float64, new_target_len)
-		for j := range n.Layers[i].Weights {
-			aj := n.Layers[i].Output[j]
-			dadz := aj * (1 - aj)
-			yj := target[j]
-			dcda := aj - yj
-			for k := range n.Layers[i].Weights[0] {
-				if i != 0 {
-					dzdv = n.Layers[i-1].Output[k]
-				} else {
-					dzdv = n.Input[k]
-				}
-				new_target[k] += n.Layers[i].Weights[j][k] * dadz * dcda
-				n.Layers[i].Weights[j][k] -= theta * dzdv * dadz * dcda
+
+		prevDelta := make([]float64, len(prevAct))
+
+		for j := 0; j < len(layer.Weights); j++ {
+			a := layer.Output[j]
+			da_dz := a * (1 - a)
+			deltaZ := delta[j] * da_dz
+			for k := 0; k < len(layer.Weights[j]); k++ {
+				oldW := layer.Weights[j][k]
+				grad := deltaZ * prevAct[k]
+				layer.Weights[j][k] -= theta * grad
+				prevDelta[k] += oldW * deltaZ
 			}
 		}
-		target = new_target
+		delta = prevDelta
 	}
 	return nil
 }

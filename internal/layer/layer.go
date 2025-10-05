@@ -2,7 +2,7 @@ package layer
 
 import (
 	"fmt"
-	"math/rand/v2"
+	"math/rand"
 	"san-nn/internal/nnmath"
 )
 
@@ -15,8 +15,15 @@ func (l *Layer) GetOutput(input []float64) error {
 	if len(l.Weights) == 0 {
 		return fmt.Errorf("layer has no weights")
 	}
+	if len(l.Weights[0]) == 0 {
+		return fmt.Errorf("layer has zero input size")
+	}
 	if len(input) != len(l.Weights[0]) {
 		return fmt.Errorf("got input size %d but expected %d", len(input), len(l.Weights[0]))
+	}
+
+	if len(l.Output) != len(l.Weights) {
+		l.Output = make([]float64, len(l.Weights))
 	}
 
 	for i, row := range l.Weights {
@@ -41,8 +48,8 @@ func NewLayer(inputSize, outputSize int) Layer {
 }
 
 func (l *Layer) InitWeightsRand() {
-	for i, row := range l.Weights {
-		for j := range row {
+	for i := range l.Weights {
+		for j := range l.Weights[i] {
 			l.Weights[i][j] = rand.Float64()*2 - 1
 		}
 	}
