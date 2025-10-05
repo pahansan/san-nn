@@ -3,6 +3,7 @@ package nn
 import (
 	"fmt"
 	"san-nn/internal/layer"
+	"san-nn/internal/nnmath"
 )
 
 type NN struct {

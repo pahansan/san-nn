@@ -3,7 +3,7 @@ package layer
 import (
 	"fmt"
 	"math/rand/v2"
-	"san-nn/internal/sigmoid"
+	"san-nn/internal/nnmath"
 )
 
 type Layer struct {
@@ -23,7 +23,7 @@ func (l *Layer) GetOutput(input []float64) error {
 		for j, weight := range row {
 			l.Output[i] += weight * input[j]
 		}
-		l.Output[i] = sigmoid.Sigmoid(l.Output[i])
+		l.Output[i] = nnmath.Sigmoid(l.Output[i])
 	}
 	return nil
 }
