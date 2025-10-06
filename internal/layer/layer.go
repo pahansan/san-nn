@@ -50,7 +50,7 @@ func NewLayer(inputSize, outputSize int) Layer {
 func (l *Layer) InitWeightsRand() {
 	for i := range l.Weights {
 		for j := range l.Weights[i] {
-			l.Weights[i][j] = rand.Float64()
+			l.Weights[i][j] = rand.Float64() - 0.5
 		}
 	}
 }

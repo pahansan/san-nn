@@ -18,8 +18,13 @@ func main() {
 	nums := parser.ParseLines(strs)
 	fmt.Println("Train...")
 	mnist := nn.NewNN([]int{784, 1000, 10})
+	mnist.InitWeightsRand()
 	for i, ex := range nums {
-		mnist.SetInput(ex[1:])
+		input := ex[1:]
+		for j := range input {
+			input[j] = input[j] / 255
+		}
+		mnist.SetInput(input)
 		mnist.ForwardProp()
 		mnist.BackProp(formatTarget(int(ex[0])), 0.1)
 		if i%10000 == 0 {
